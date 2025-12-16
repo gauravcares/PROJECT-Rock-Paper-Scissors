@@ -1,0 +1,300 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
+
+/* -------- Global statistics -------- */
+int gamesPlayed = 0;
+int wins = 0;
+int losses = 0;
+
+int rockCount = 0;
+int paperCount = 0;
+int scissorsCount = 0;
+
+/* -------- Function declarations -------- */
+void login(char username[]);
+void mainMenu(char username[]);
+
+int getChoice();
+int computerChoice();
+
+void playQuickMatch();
+void playBestOf();
+void playSurvival();
+void playMultiplayer();
+
+void showStats();
+void updateFavourite(int choice);
+int decideWinner(int user , int comp);
+
+
+/* -------- Main -------- */
+int main()
+{
+    char username[50];
+
+    srand(time(NULL));   // seed for random numbers
+
+    login(username);
+    mainMenu(username);
+
+    return 0;
+}
+
+
+/* -------- Login Section -------- */
+void login(char username[])
+{
+    printf("=====================================\n");
+    printf("   ROCK PAPER SCISSORS GAME (LOGIN)\n");
+    printf("=====================================\n");
+
+    printf("Enter your username: ");
+    scanf("%s", username);
+
+    printf("Welcome, %s!\n", username);
+}
+
+
+/* -------- Main Menu -------- */
+void mainMenu(char username[])
+{
+    int choice;
+
+    do
+    {
+        printf("\n========== MAIN MENU ==========\n");
+        printf("1. Quick Match\n");
+        printf("2. Best of Series\n");
+        printf("3. Survival Mode\n");
+        printf("4. Multiplayer Mode\n");
+        printf("5. View Statistics\n");
+        printf("6. Exit\n");
+
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch(choice)
+        {
+            case 1:
+                playQuickMatch();
+                break;
+
+            case 2:
+                playBestOf();
+                break;
+
+            case 3:
+                playSurvival();
+                break;
+
+            case 4:
+                playMultiplayer();
+                break;
+
+            case 5:
+                showStats();
+                break;
+
+            case 6:
+                printf("Exiting game. Thank you!\n");
+                break;
+
+            default:
+                printf("Invalid choice!\n");
+        }
+
+    } while(choice != 6);
+}
+
+
+/* -------- User Choice -------- */
+int getChoice()
+{
+    int choice;
+
+    printf("\n1. Rock");
+    printf("\n2. Paper");
+    printf("\n3. Scissors");
+    printf("\nEnter choice: ");
+
+    scanf("%d", &choice);
+
+    updateFavourite(choice);
+
+    return choice;
+}
+
+
+/* -------- Computer Choice -------- */
+int computerChoice()
+{
+    return (rand() % 3) + 1;
+}
+
+
+/* -------- Favourite Counter -------- */
+void updateFavourite(int choice)
+{
+    if(choice == 1)
+        rockCount++;
+    else if(choice == 2)
+        paperCount++;
+    else if(choice == 3)
+        scissorsCount++;
+}
+
+
+/* -------- Winner Logic -------- */
+int decideWinner(int user , int comp)
+{
+    if(user == comp)
+        return 0;
+
+    if((user == 1 && comp == 3) ||
+       (user == 2 && comp == 1) ||
+       (user == 3 && comp == 2))
+        return 1;
+
+    return -1;
+}
+
+
+/* -------- Quick Match -------- */
+void playQuickMatch()
+{
+    int user , comp , result;
+
+    gamesPlayed++;
+
+    user = getChoice();
+    comp = computerChoice();
+
+    result = decideWinner(user , comp);
+
+    if(result == 1)
+    {
+        wins++;
+        printf("You Win!\n");
+    }
+    else if(result == -1)
+    {
+        losses++;
+        printf("Computer Wins!\n");
+    }
+    else
+    {
+        printf("Draw!\n");
+    }
+}
+
+
+/* -------- Best Of Series -------- */
+void playBestOf()
+{
+    int rounds;
+    int userScore = 0 , compScore = 0;
+
+    printf("Enter number of rounds (3/5/7): ");
+    scanf("%d", &rounds);
+
+    for(int i = 0; i < rounds; i++)
+    {
+        int user = getChoice();
+        int comp = computerChoice();
+
+        int result = decideWinner(user , comp);
+
+        if(result == 1)
+            userScore++;
+        else if(result == -1)
+            compScore++;
+    }
+
+    gamesPlayed++;
+
+    if(userScore > compScore)
+    {
+        wins++;
+        printf("You won the series!\n");
+    }
+    else
+    {
+        losses++;
+        printf("Computer won the series!\n");
+    }
+}
+
+
+/* -------- Survival Mode -------- */
+void playSurvival()
+{
+    int alive = 1;
+
+    while(alive)
+    {
+        int user = getChoice();
+        int comp = computerChoice();
+
+        int result = decideWinner(user , comp);
+
+        if(result == -1)
+        {
+            losses++;
+            gamesPlayed++;
+
+            printf("You lost! Survival ended.\n");
+            alive = 0;
+        }
+        else
+        {
+            wins++;
+            printf("You survived this round!\n");
+        }
+    }
+}
+
+
+/* -------- Multiplayer -------- */
+void playMultiplayer()
+{
+    int p1 , p2;
+
+    printf("\nPlayer 1 turn:\n");
+    p1 = getChoice();
+
+    printf("\nPlayer 2 turn:\n");
+    p2 = getChoice();
+
+    if(decideWinner(p1 , p2) == 1)
+        printf("Player 1 Wins!\n");
+    else if(decideWinner(p2 , p1) == 1)
+        printf("Player 2 Wins!\n");
+    else
+        printf("Draw!\n");
+}
+
+
+/* -------- Statistics -------- */
+void showStats()
+{
+    printf("\n========== STATISTICS ==========\n");
+
+    printf("Games Played: %d\n", gamesPlayed);
+    printf("Wins: %d\n", wins);
+    printf("Losses: %d\n", losses);
+
+    if(gamesPlayed > 0)
+        printf("Win Percentage: %.2f%%\n",
+               (wins * 100.0) / gamesPlayed);
+
+    printf("Favourite Choice: ");
+
+    if(rockCount >= paperCount && rockCount >= scissorsCount)
+        printf("Rock\n");
+    else if(paperCount >= rockCount && paperCount >= scissorsCount)
+        printf("Paper\n");
+    else
+        printf("Scissors\n");
+}
